@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>บันทึกของเราสองคน</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.9.0/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
+<style>
+/* Layout: one column like a photo-strip diary; sticky tab bar; floating add button */
+:root{
+  --bg:#F7F1F4; --surface:#FFFFFF; --ink:#2B1E2E; --muted:#7A6A7D; --line:#E8DCE4;
+  --rose:#D9455F; --rose-soft:#FBE3E8; --teal:#2C8A84; --teal-soft:#DDF1EF;
+  --gold:#C58A1E; --gold-soft:#FBEFD6; --violet:#6A55B8; --violet-soft:#E9E4F8;
+  --sky:#2F78C4; --sky-soft:#E0ECF8; --land:#EADFE6; --landline:#D4C4CF;
+  --shadow:0 1px 2px rgba(60,20,50,.06),0 6px 20px rgba(60,20,50,.07);
+  --f-display:"Mitr","Noto Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1A1420; --surface:#251D2C; --ink:#F3E9F1; --muted:#B3A2B6; --line:#3A2E42;
+  --rose:#F0718A; --rose-soft:#46222D; --teal:#5CC2BA; --teal-soft:#1D3B3A;
+  --gold:#E8B24F; --gold-soft:#3D3020; --violet:#A796EC; --violet-soft:#2F2747;
+  --sky:#6FA9E6; --sky-soft:#1E2E44; --land:#33293A; --landline:#4A3C52;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1A1420; --surface:#251D2C; --ink:#F3E9F1; --muted:#B3A2B6; --line:#3A2E42;
+  --rose:#F0718A; --rose-soft:#46222D; --teal:#5CC2BA; --teal-soft:#1D3B3A;
+  --gold:#E8B24F; --gold-soft:#3D3020; --violet:#A796EC; --violet-soft:#2F2747;
+  --sky:#6FA9E6; --sky-soft:#1E2E44; --land:#33293A; --landline:#4A3C52;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.3); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:720px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);font-weight:500;text-wrap:balance;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* hero */
+.hero{padding-block:28px 18px;display:grid;gap:14px}
+.names{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--f-display);font-size:clamp(22px,5vw,30px);font-weight:500}
+.names .amp{color:var(--rose);font-weight:400}
+.since{color:var(--muted);font-size:14px}
+.counter{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.days-big{font-family:var(--f-display);font-size:clamp(56px,16vw,92px);line-height:.9;font-weight:600;color:var(--rose);letter-spacing:-.02em}
+.days-big small{display:block;font-size:15px;font-weight:400;color:var(--muted);letter-spacing:0;margin-top:8px}
+.ymd{display:flex;gap:8px;padding-bottom:6px}
+.ymd div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 12px;text-align:center;min-width:60px}
+.ymd b{display:block;font-family:var(--f-display);font-size:22px;font-weight:500;line-height:1.2}
+.ymd span{font-size:12px;color:var(--muted)}
+.nextline{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-size:13px;background:var(--surface);border:1px solid var(--line)}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--rose)}
+.pill.gold .dot{background:var(--gold)}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tab{flex:1;border:0;background:transparent;padding:8px 4px;border-radius:10px;font-family:var(--f-display);font-size:15px;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.view{padding-block:18px}
+
+/* filters */
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tdot{width:8px;height:8px;border-radius:50%;flex:none}
+
+/* timeline */
+.month{font-family:var(--f-display);font-size:14px;color:var(--muted);margin:22px 0 10px;letter-spacing:.02em}
+.tl{position:relative;display:grid;gap:14px;padding-left:22px}
+.tl::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--line);border-radius:2px}
+.item{position:relative;background:var(--surface);border-radius:16px;padding:14px;box-shadow:var(--shadow);display:grid;gap:8px;min-width:0}
+.item::before{content:"";position:absolute;left:-21px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--c,var(--rose));box-shadow:0 0 0 3px var(--bg)}
+.item-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted)}
+.typetag{font-size:12px;font-weight:500;padding:1px 9px;border-radius:999px;background:var(--cs);color:var(--c)}
+.item h3{font-size:18px;line-height:1.35}
+.note{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.photos{display:grid;gap:4px;grid-template-columns:repeat(3,1fr)}
+.photos.n1{grid-template-columns:1fr}.photos.n2{grid-template-columns:1fr 1fr}
+.photos button{border:0;padding:0;border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--line);max-width:100%}
+.photos.n1 button{aspect-ratio:4/3}
+.photos img{width:100%;height:100%;object-fit:cover;display:block}
+.place{border:0;background:var(--teal-soft);color:var(--teal);border-radius:999px;padding:2px 10px;font-size:13px;justify-self:start;display:inline-flex;gap:6px;align-items:center;max-width:100%}
+.place span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dayno{font-family:var(--f-display);color:var(--rose);font-size:13px}
+.ex{font-size:11px;background:var(--gold-soft);color:var(--gold);padding:1px 8px;border-radius:999px}
+.iconbtn{border:0;background:transparent;color:var(--muted);padding:4px 6px;border-radius:8px;font-size:13px}
+.iconbtn:hover{background:var(--bg)}
+
+.empty{text-align:center;padding:40px 16px;color:var(--muted);display:grid;gap:12px;justify-items:center}
+.empty h3{color:var(--ink)}
+
+/* map */
+#map{width:100%;height:min(62vh,520px);background:var(--surface);border-radius:16px;box-shadow:var(--shadow)}
+.mapstats{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.stat{background:var(--surface);border-radius:14px;padding:10px 14px;border:1px solid var(--line)}
+.stat b{font-family:var(--f-display);font-size:24px;font-weight:500;display:block;line-height:1.2}
+.stat span{font-size:12px;color:var(--muted)}
+.placelist{display:grid;gap:8px;margin-top:14px}
+.prow{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px;text-align:left;width:100%}
+.prow .t{flex:1;min-width:0}
+.prow .t b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .t span{font-size:12px;color:var(--muted)}
+
+/* milestones */
+.ms{display:grid;gap:10px}
+.mrow{display:flex;gap:14px;align-items:center;background:var(--surface);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.mrow.past{box-shadow:none;background:transparent;border:1px dashed var(--line);color:var(--muted)}
+.badge{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-family:var(--f-display);font-weight:500;font-size:15px;line-height:1.1;text-align:center;flex:none;background:var(--rose-soft);color:var(--rose)}
+.badge.gold{background:var(--gold-soft);color:var(--gold)}
+.badge.violet{background:var(--violet-soft);color:var(--violet)}
+.mrow .t{flex:1;min-width:0}
+.mrow .t b{font-weight:500;display:block}
+.mrow .t span{font-size:13px;color:var(--muted)}
+.left{font-family:var(--f-display);text-align:right;font-size:13px;color:var(--muted)}
+.left b{display:block;font-size:22px;color:var(--ink);font-weight:500}
+.sect{font-family:var(--f-display);font-size:16px;margin:22px 0 10px}
+
+/* forms */
+.field{display:grid;gap:4px}
+.field label,.lbl{font-size:13px;color:var(--muted)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:100%;min-width:0}
+textarea{min-height:84px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.row2{grid-template-columns:1fr}}
+.btn{border:0;border-radius:12px;padding:10px 18px;background:var(--rose);color:#fff;font-family:var(--f-display);font-size:15px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--rose);border:1px solid var(--rose)}
+.btn:disabled{opacity:.5;cursor:default}
+.card{background:var(--surface);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:grid;gap:12px}
+.typepick{display:flex;gap:6px;flex-wrap:wrap}
+.typepick button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.typepick button[aria-pressed="true"]{background:var(--cs);border-color:var(--c);color:var(--c);font-weight:500}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap}
+.thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;background:var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb button{position:absolute;top:2px;right:2px;border:0;background:rgba(0,0,0,.6);color:#fff;border-radius:50%;width:22px;height:22px;font-size:13px;line-height:22px;padding:0}
+.addphoto{width:72px;height:72px;border:1.5px dashed var(--line);border-radius:10px;display:grid;place-items:center;color:var(--muted);font-size:24px;background:var(--bg)}
+#pickmap{width:100%;height:240px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.hint{font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+/* sheet & lightbox */
+.scrim{position:fixed;inset:0;background:rgba(20,8,20,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:grid;gap:14px}
+@media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:20px}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:30;display:grid;place-items:center;padding:20px}
+.lb img{max-width:100%;max-height:86vh;border-radius:8px}
+.lb button{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:999px;padding:6px 14px}
+.fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:8;border:0;background:var(--rose);color:#fff;
+  border-radius:999px;padding:14px 20px;font-family:var(--f-display);font-size:16px;box-shadow:0 8px 24px rgba(217,69,95,.35);display:flex;gap:8px;align-items:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px}
+.status{font-size:12px;color:var(--muted);text-align:center;padding:24px 0 0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hero" id="hero"></header>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-v="timeline" aria-selected="true">ไทม์ไลน์</button>
+    <button class="tab" role="tab" data-v="map" aria-selected="false">แผนที่</button>
+    <button class="tab" role="tab" data-v="days" aria-selected="false">วันสำคัญ</button>
+    <button class="tab" role="tab" data-v="settings" aria-selected="false">ตั้งค่า</button>
+  </nav>
+  <main>
+    <section class="view" id="v-timeline"></section>
+    <section class="view" id="v-map" hidden>
+      <div class="mapstats" id="mapstats"></div>
+      <div id="map"></div>
+      <div class="placelist" id="placelist"></div>
+    </section>
+    <section class="view" id="v-days" hidden></section>
+    <section class="view" id="v-settings" hidden></section>
+  </main>
+  <p class="status" id="status">กำลังโหลด…</p>
+</div>
+<button class="fab" id="fab" type="button"><span aria-hidden="true">＋</span> เพิ่มความทรงจำ</button>
+<div id="modal"></div>
+
+<script>
+const TYPES = {
+  meet:{label:"เจอกัน",c:"--rose",cs:"--rose-soft"},
+  daily:{label:"วันนี้ทำอะไร",c:"--sky",cs:"--sky-soft"},
+  trip:{label:"ไปเที่ยว",c:"--teal",cs:"--teal-soft"},
+  anniv:{label:"ครบรอบ",c:"--gold",cs:"--gold-soft"},
+  wedding:{label:"แต่งงาน",c:"--violet",cs:"--violet-soft"},
+  other:{label:"อื่นๆ",c:"--muted",cs:"--line"}
+};
+const S = {settings:{nameA:"",nameB:"",start:"",wedding:""}, moments:[], filter:"all", view:"timeline", mode:"loading"};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const tv = (k) => `var(${k})`;
+
+/* ---------- dates ---------- */
+const parseD = s => { if(!s) return null; const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
+const todayD = () => { const n=new Date(); return new Date(n.getFullYear(),n.getMonth(),n.getDate()); };
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const daysBetween = (a,b) => Math.round((b-a)/86400000);
+const thDate = d => d.toLocaleDateString("th-TH",{day:"numeric",month:"short",year:"numeric"});
+const thLong = d => d.toLocaleDateString("th-TH",{weekday:"short",day:"numeric",month:"long",year:"numeric"});
+const thMonth = d => d.toLocaleDateString("th-TH",{month:"long",year:"numeric"});
+function ymd(a,b){ let y=b.getFullYear()-a.getFullYear(), m=b.getMonth()-a.getMonth(), d=b.getDate()-a.getDate();
+  if(d<0){ m--; d+=new Date(b.getFullYear(),b.getMonth(),0).getDate(); } if(m<0){ y--; m+=12; } return {y,m,d}; }
+function addYears(d,n){ const r=new Date(d); r.setFullYear(d.getFullYear()+n); if(r.getMonth()!==d.getMonth()) r.setDate(0); return r; }
+const fmtNum = n => n.toLocaleString("th-TH");
+
+/* ---------- storage: shared db, else this browser ---------- */
+const LKEY="couple-diary-v1";
+let db=null, assets=null;
+const store = {
+  async saveSettings(s){ if(db) return db.doc("couple/settings").set(s); S.settings=s; local.save(); render(); },
+  async saveMoment(m){ const {id,...data}=m; data.updatedAt=Date.now();
+    if(db){ if(id) return db.doc("moments/"+id).set(data); data.createdAt=Date.now(); return db.collection("moments").add(data); }
+    if(id){ S.moments=S.moments.map(x=>x.id===id?{id,...data}:x); } else { data.createdAt=Date.now(); S.moments.push({id:"l"+Date.now(),...data}); }
+    local.save(); render(); },
+  async deleteMoment(id){ if(db) return db.doc("moments/"+id).delete(); S.moments=S.moments.filter(x=>x.id!==id); local.save(); render(); },
+  async uploadPhoto(blob){ if(assets){ const r=await assets.upload(blob); return {id:r.id}; }
+    return {src: await blobToDataURL(await shrink(blob,900,.78))}; }
+};
+const local = {
+  load(){ try{ const j=JSON.parse(localStorage.getItem(LKEY)||"null"); if(j){ S.settings=j.settings||S.settings; S.moments=j.moments||[]; } }catch(e){} },
+  save(){ try{ localStorage.setItem(LKEY,JSON.stringify({settings:S.settings,moments:S.moments})); }catch(e){ toast("พื้นที่ในเบราว์เซอร์เต็ม ลองใช้รูปน้อยลง"); } }
+};
+const photoSrc = p => p.id ? "/_blob/"+p.id : p.src;
+
+function blobToDataURL(b){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(b); }); }
+function shrink(file,max=1600,q=.85){ return new Promise((res)=>{ const img=new Image(); const u=URL.createObjectURL(file);
+  img.onload=()=>{ const k=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement("canvas");
+    c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(u); c.toBlob(b=>res(b||file),"image/jpeg",q); };
+  img.onerror=()=>{ URL.revokeObjectURL(u); res(file); }; img.src=u; }); }
+
+async function boot(){
+  let settled=false;
+  const fallback = () => { if(settled) return; settled=true; S.mode="local"; local.load(); render(); };
+  const timer=setTimeout(fallback,10000);
+  try{
+    const api = window.claude && window.claude.use ? window.claude : null;
+    if(!api){ clearTimeout(timer); return fallback(); }
+    db = await api.use("db");
+    if(!db){ clearTimeout(timer); return fallback(); }
+    api.use("assets").then(a=>{ assets=a; }).catch(()=>{});
+    let gotS=false, gotM=false;
+    const ready=()=>{ if(gotS&&gotM&&!settled){ settled=true; clearTimeout(timer); S.mode="db"; } render(); };
+    db.doc("couple/settings").onSnapshot(snap=>{ if(snap.exists){ S.settings={...S.settings,...snap.data()}; } gotS=true; ready(); },
+      e=>{ clearTimeout(timer); db=null; fallback(); });
+    db.collection("moments").onSnapshot(snap=>{ S.moments=snap.docs.map(d=>({id:d.id,...d.data()})); gotM=true; ready(); },
+      e=>{ clearTimeout(timer); db=null; fallback(); });
+  }catch(e){ clearTimeout(timer); fallback(); }
+}
+
+/* ---------- milestones ---------- */
+function milestones(){
+  const st=parseD(S.settings.start), wd=parseD(S.settings.wedding), t=todayD(); const out=[];
+  if(st){
+    const marks=[100,200,300,365,500,700,1000,1500,2000,2500,3000,3650,4000,5000,6000,7000,7300,8000,9000,10000];
+    marks.forEach(n=>{ const d=new Date(st); d.setDate(d.getDate()+n-1); out.push({d,label:`ครบ ${fmtNum(n)} วัน`,badge:fmtNum(n)+"<br><small>วัน</small>",kind:"rose"}); });
+    for(let y=1;y<=50;y++){ out.push({d:addYears(st,y),label:`ครบรอบ ${y} ปีที่คบกัน`,badge:`${y}<br><small>ปี</small>`,kind:"gold"}); }
+  }
+  if(wd){ out.push({d:wd,label:"วันแต่งงาน",badge:"แต่ง",kind:"violet"});
+    for(let y=1;y<=50;y++) out.push({d:addYears(wd,y),label:`ครบรอบแต่งงาน ${y} ปี`,badge:`${y}<br><small>ปี</small>`,kind:"violet"}); }
+  S.moments.filter(m=>m.type==="anniv"&&m.repeat).forEach(m=>{ const d0=parseD(m.date); if(!d0) return;
+    let y=t.getFullYear(); let d=new Date(y,d0.getMonth(),d0.getDate()); if(d<t) d=new Date(y+1,d0.getMonth(),d0.getDate());
+    out.push({d,label:m.title+" (ทุกปี)",badge:(d.getFullYear()-d0.getFullYear())+"<br><small>ปี</small>",kind:"gold"}); });
+  out.sort((a,b)=>a.d-b.d);
+  return {up:out.filter(x=>x.d>=t), past:out.filter(x=>x.d<t)};
+}
+
+/* ---------- render ---------- */
+function render(){
+  $("#status").textContent = S.mode==="loading" ? "กำลังโหลด…" : S.mode==="db" ? "บันทึกออนไลน์ · แชร์ลิงก์ให้แฟนเพื่อเพิ่มด้วยกันได้" : "บันทึกไว้ในเบราว์เซอร์นี้เท่านั้น";
+  renderHero(); renderTimeline(); renderDays(); renderSettings(); if(S.view==="map") renderMap();
+}
+function renderHero(){
+  const s=S.settings, st=parseD(s.start), t=todayD();
+  const a=esc(s.nameA||"เธอ"), b=esc(s.nameB||"เรา");
+  let h=`<div class="names"><span>${a}</span><span class="amp">♥</span><span>${b}</span></div>`;
+  if(!st){ h+=`<p class="since">ใส่วันที่เริ่มคบกันในแท็บ “ตั้งค่า” เพื่อเริ่มนับวัน</p>`; $("#hero").innerHTML=h; return; }
+  const n=daysBetween(st,t)+1, r=ymd(st,t);
+  h+=`<div class="counter"><div class="days-big num">${fmtNum(n)}<small>วันที่เรารักกัน · ตั้งแต่ ${thDate(st)}</small></div>
+    <div class="ymd num"><div><b>${r.y}</b><span>ปี</span></div><div><b>${r.m}</b><span>เดือน</span></div><div><b>${r.d}</b><span>วัน</span></div></div></div>`;
+  const nx=milestones().up; let pills="";
+  if(nx[0]){ const left=daysBetween(t,nx[0].d); pills+=`<span class="pill"><span class="dot"></span>${left===0?"วันนี้":`อีก ${fmtNum(left)} วัน`} ${esc(nx[0].label)}</span>`; }
+  const wd=parseD(s.wedding);
+  if(wd){ if(wd<=t){ const w=ymd(wd,t); pills+=`<span class="pill gold"><span class="dot"></span>แต่งงานมาแล้ว ${w.y?w.y+" ปี ":""}${w.m?w.m+" เดือน ":""}${w.d} วัน</span>`; }
+    else pills+=`<span class="pill gold"><span class="dot"></span>อีก ${fmtNum(daysBetween(t,wd))} วันจะแต่งงาน</span>`; }
+  if(pills) h+=`<div class="nextline">${pills}</div>`;
+  $("#hero").innerHTML=h;
+}
+function typeStyle(k){ const T=TYPES[k]||TYPES.other; return `--c:${tv(T.c)};--cs:${tv(T.cs)}`; }
+
+function renderTimeline(){
+  const el=$("#v-timeline"); const st=parseD(S.settings.start);
+  const counts={all:S.moments.length}; S.moments.forEach(m=>counts[m.type]=(counts[m.type]||0)+1);
+  let h=`<div class="filters">`+[["all","ทั้งหมด"],...Object.entries(TYPES).map(([k,v])=>[k,v.label])].map(([k,l])=>
+    `<button class="chip" aria-pressed="${S.filter===k}" data-f="${k}" style="${k!=="all"?typeStyle(k):""}">${k!=="all"?`<span class="tdot" style="background:var(--c)"></span>`:""}${l} <span class="num">${counts[k]||0}</span></button>`).join("")+`</div>`;
+  const list=S.moments.filter(m=>S.filter==="all"||m.type===S.filter).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
+  if(!list.length){
+    h+= S.mode==="loading" ? `<div class="empty"><p>กำลังโหลดความทรงจำ…</p></div>` :
+      `<div class="empty"><h3>${S.moments.length?"ยังไม่มีเรื่องในหมวดนี้":"เริ่มบันทึกเรื่องแรกของเรา"}</h3><p>เพิ่มวันที่เจอกัน วันนี้ทำอะไร ทริปที่ไป หรือวันครบรอบ พร้อมรูปและสถานที่</p><button class="btn" data-add>เพิ่มความทรงจำ</button></div>`;
+  } else {
+    let cur=""; let open=false;
+    list.forEach(m=>{ const d=parseD(m.date)||todayD(); const mk=thMonth(d);
+      if(mk!==cur){ if(open) h+=`</div>`; h+=`<h2 class="month">${mk}</h2><div class="tl">`; cur=mk; open=true; }
+      const T=TYPES[m.type]||TYPES.other; const ph=m.photos||[]; const dn=st?daysBetween(st,d)+1:null;
+      h+=`<article class="item" style="${typeStyle(m.type)}">
+        <div class="item-head"><div class="meta"><span class="typetag">${T.label}</span><span>${thLong(d)}</span>${dn&&dn>0?`<span class="dayno num">วันที่ ${fmtNum(dn)}</span>`:""}${m.example?`<span class="ex">ตัวอย่าง</span>`:""}</div>
+        <button class="iconbtn" data-edit="${m.id}" aria-label="แก้ไข">แก้ไข</button></div>
+        ${m.title?`<h3>${esc(m.title)}</h3>`:""}
+        ${m.note?`<p class="note">${esc(m.note)}</p>`:""}
+        ${ph.length?`<div class="photos n${Math.min(ph.length,3)}">${ph.map((p,i)=>`<button data-lb="${m.id}:${i}" aria-label="ดูรูป"><img loading="lazy" src="${esc(photoSrc(p))}" alt="" onerror="this.style.opacity=0"></button>`).join("")}</div>`:""}
+        ${m.place&&m.place.name?`<button class="place" data-goto="${m.id}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg><span>${esc(m.place.name)}</span></button>`:""}
+      </article>`; });
+    if(open) h+=`</div>`;
+  }
+  el.innerHTML=h;
+}
+
+function renderDays(){
+  const el=$("#v-days"); const t=todayD();
+  if(!S.settings.start && !S.settings.wedding){ el.innerHTML=`<div class="empty"><h3>ยังไม่ได้ตั้งวันเริ่มคบ</h3><p>ใส่วันที่เริ่มคบกันและวันแต่งงานในแท็บ “ตั้งค่า” แล้วระบบจะคำนวณวันครบรอบให้อัตโนมัติ</p><button class="btn" data-tab="settings">ไปที่ตั้งค่า</button></div>`; return; }
+  const {up,past}=milestones();
+  const row=(x,isPast)=>{ const left=daysBetween(t,x.d);
+    return `<div class="mrow ${isPast?"past":""}"><div class="badge ${x.kind==="gold"?"gold":x.kind==="violet"?"violet":""}">${x.badge}</div>
+      <div class="t"><b>${esc(x.label)}</b><span>${thLong(x.d)}</span></div>
+      <div class="left num">${isPast?`ผ่านมา<b>${fmtNum(-left)}</b>วัน`:left===0?`<b>วันนี้</b>`:`อีก<b>${fmtNum(left)}</b>วัน`}</div></div>`; };
+  let h=`<h2 class="sect">ที่กำลังจะมาถึง</h2><div class="ms">${up.slice(0,8).map(x=>row(x,false)).join("")}</div>`;
+  if(past.length) h+=`<h2 class="sect">ผ่านมาแล้ว ${past.length} ครั้ง</h2><div class="ms">${past.slice(-6).reverse().map(x=>row(x,true)).join("")}</div>`;
+  h+=`<p class="hint" style="margin-top:14px">อยากให้วันพิเศษอื่นขึ้นที่นี่ทุกปี (เช่น วันเกิดแฟน) ให้เพิ่มความทรงจำแบบ “ครบรอบ” แล้วติ๊ก “เตือนทุกปี”</p>`;
+  el.innerHTML=h;
+}
+
+function renderSettings(){
+  const s=S.settings; const el=$("#v-settings");
+  if(el.dataset.ready && el.contains(document.activeElement)) return;
+  el.dataset.ready="1";
+  el.innerHTML=`<form class="card" id="setform">
+    <div class="row2"><div class="field"><label for="s-a">ชื่อแฟน</label><input id="s-a" value="${esc(s.nameA)}" placeholder="เช่น ต้นข้าว"></div>
+    <div class="field"><label for="s-b">ชื่อเรา</label><input id="s-b" value="${esc(s.nameB)}" placeholder="เช่น ภูมิ"></div></div>
+    <div class="row2"><div class="field"><label for="s-st">วันที่เริ่มคบกัน</label><input type="date" id="s-st" value="${esc(s.start)}"></div>
+    <div class="field"><label for="s-wd">วันแต่งงาน (ถ้ามี)</label><input type="date" id="s-wd" value="${esc(s.wedding)}"></div></div>
+    <div class="actions"><button class="btn" type="submit">บันทึก</button></div></form>
+    <div class="card" style="margin-top:14px"><b style="font-family:var(--f-display);font-weight:500">ใช้กับแฟน</b>
+    <p class="hint" style="margin:0">${S.mode==="db"?"กด Share ของหน้านี้แล้วเชิญแฟนแบบแก้ไขได้ (Can edit) ทั้งคู่จะเห็นและเพิ่มไทม์ไลน์ร่วมกันได้ รูปที่อัปโหลดจะเก็บไว้กับหน้านี้":"ตอนนี้ข้อมูลอยู่ในเบราว์เซอร์นี้เท่านั้น เปิดหน้านี้ใน claude.ai ขณะล็อกอินเพื่อบันทึกออนไลน์และแชร์กับแฟน"}</p>
+    ${S.moments.some(m=>m.example)?`<button class="btn ghost" type="button" id="clearex">ลบรายการตัวอย่างทั้งหมด</button>`:""}</div>`;
+}
+
+/* ---------- map ---------- */
+let chart=null;
+const mapColors=()=>{ const cs=getComputedStyle(document.documentElement); const g=k=>cs.getPropertyValue(k).trim(); return {land:g("--land"),line:g("--landline"),rose:g("--rose"),ink:g("--ink"),surface:g("--surface"),muted:g("--muted")}; };
+function geoOpt(c,center,zoom){ return {map:"world",roam:true,center,zoom,scaleLimit:{min:1,max:60},itemStyle:{areaColor:c.land,borderColor:c.line,borderWidth:.6},
+  emphasis:{label:{show:false},itemStyle:{areaColor:c.land}},label:{show:false}}; }
+function places(){ return S.moments.filter(m=>m.place&&Number.isFinite(m.place.lat)&&Number.isFinite(m.place.lng)); }
+function renderMap(focus){
+  const P=places(); const names=new Set(P.map(m=>m.place.name.trim().toLowerCase()));
+  const trips=S.moments.filter(m=>m.type==="trip").length;
+  $("#mapstats").innerHTML=`<div class="stat"><b class="num">${names.size}</b><span>สถานที่ที่ไปด้วยกัน</span></div><div class="stat"><b class="num">${trips}</b><span>ทริป</span></div><div class="stat"><b class="num">${S.moments.reduce((n,m)=>n+(m.photos||[]).length,0)}</b><span>รูปทั้งหมด</span></div>`;
+  const el=$("#map");
+  if(!window.echarts){ el.innerHTML=`<div class="empty"><p>โหลดแผนที่ไม่ได้ในตอนนี้ รายชื่อสถานที่อยู่ด้านล่าง</p></div>`; }
+  else{
+    if(!chart){ chart=echarts.init(el); chart.on("click",p=>{ if(p.seriesType==="effectScatter"||p.seriesType==="scatter"){ openDetail(p.data.id); } }); window.addEventListener("resize",()=>chart&&chart.resize()); }
+    const c=mapColors(); let center=[100.5,13.7], zoom=5;
+    if(P.length){ const lng=P.map(m=>m.place.lng), lat=P.map(m=>m.place.lat);
+      center=[(Math.min(...lng)+Math.max(...lng))/2,(Math.min(...lat)+Math.max(...lat))/2];
+      const span=Math.max(Math.max(...lng)-Math.min(...lng),(Math.max(...lat)-Math.min(...lat))*1.6,4); zoom=Math.max(1.1,Math.min(14,240/span)); }
+    if(focus){ center=[focus.place.lng,focus.place.lat]; zoom=12; }
+    chart.setOption({backgroundColor:"transparent",tooltip:{trigger:"item",backgroundColor:c.surface,borderColor:c.line,textStyle:{color:c.ink,fontFamily:"IBM Plex Sans Thai"},
+        formatter:p=>p.data&&p.data.id?`<b>${esc(p.data.name)}</b><br>${esc(p.data.title)}<br><span style="color:${c.muted}">${esc(p.data.when)}</span>`:""},
+      geo:geoOpt(c,center,zoom),
+      series:[{type:"effectScatter",coordinateSystem:"geo",symbolSize:11,rippleEffect:{scale:3,brushType:"stroke"},itemStyle:{color:c.rose,borderColor:c.surface,borderWidth:1.5},
+        data:P.map(m=>({id:m.id,name:m.place.name,title:m.title||"",when:thDate(parseD(m.date)||todayD()),value:[m.place.lng,m.place.lat]}))}]},true);
+    chart.resize();
+  }
+  const groups={}; P.forEach(m=>{ const k=m.place.name.trim(); (groups[k]=groups[k]||[]).push(m); });
+  const rows=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length);
+  $("#placelist").innerHTML = rows.length ? rows.map(([k,ms])=>`<button class="prow" data-goto="${ms[0].id}"><span class="tdot" style="background:var(--rose)"></span><span class="t"><b>${esc(k)}</b><span>${ms.length} ครั้ง · ล่าสุด ${thDate(parseD(ms.map(x=>x.date).sort().pop())||todayD())}</span></span></button>`).join("")
+    : `<div class="empty"><p>ยังไม่มีสถานที่ เพิ่มความทรงจำแล้วจิ้มบนแผนที่เพื่อปักหมุด</p></div>`;
+}
+
+/* ---------- add / edit sheet ---------- */
+let draft=null, pickChart=null;
+function openEditor(m){
+  draft = m ? JSON.parse(JSON.stringify(m)) : {date:iso(todayD()),type:"daily",title:"",note:"",photos:[],place:null,repeat:false};
+  if(!draft.photos) draft.photos=[];
+  const pl=draft.place||{};
+  $("#modal").innerHTML=`<div class="scrim" id="scrim"><form class="sheet" id="edform" role="dialog" aria-label="ความทรงจำ">
+    <div class="sheet-head"><h2 style="font-size:20px">${m?"แก้ไขความทรงจำ":"เพิ่มความทรงจำ"}</h2><button type="button" class="iconbtn" data-close>ปิด</button></div>
+    <div class="typepick" id="typepick">${Object.entries(TYPES).map(([k,v])=>`<button type="button" data-t="${k}" style="${typeStyle(k)}" aria-pressed="${draft.type===k}"><span class="tdot" style="background:var(--c)"></span>${v.label}</button>`).join("")}</div>
+    <div class="row2"><div class="field"><label for="e-date">วันที่</label><input type="date" id="e-date" value="${esc(draft.date)}" required></div>
+    <div class="field"><label for="e-title">หัวข้อ</label><input id="e-title" value="${esc(draft.title)}" placeholder="เช่น ไปกินข้าวร้านโปรด"></div></div>
+    <div class="field"><label for="e-note">วันนี้เป็นยังไงบ้าง</label><textarea id="e-note" placeholder="เล่าสั้นๆ ไว้อ่านทีหลัง">${esc(draft.note)}</textarea></div>
+    <label class="hint" id="repeatwrap" style="display:${draft.type==="anniv"?"flex":"none"};gap:8px;align-items:center"><input type="checkbox" id="e-repeat" style="width:auto" ${draft.repeat?"checked":""}> เตือนทุกปีในแท็บวันสำคัญ</label>
+    <div class="field"><span class="lbl">รูป</span><div class="thumbs" id="thumbs"></div><input type="file" id="e-files" accept="image/*" multiple hidden></div>
+    <div class="field"><label for="e-place">สถานที่</label><input id="e-place" value="${esc(pl.name||"")}" placeholder="ชื่อสถานที่ เช่น ดอยอินทนนท์"></div>
+    <div id="pickmap"></div>
+    <div class="row2"><div class="field"><label for="e-coord">พิกัด (จิ้มบนแผนที่ หรือวางลิงก์ Google Maps)</label><input id="e-coord" value="${pl.lat!=null?`${(+pl.lat).toFixed(5)}, ${(+pl.lng).toFixed(5)}`:""}" placeholder="18.5883, 98.4870"></div>
+    <div class="field" style="align-content:end"><button type="button" class="btn ghost" id="clrplace">ล้างหมุด</button></div></div>
+    <div class="actions">${m?`<button type="button" class="btn danger" id="delbtn">ลบ</button>`:""}<button type="button" class="btn ghost" data-close>ยกเลิก</button><button class="btn" type="submit" id="savebtn">บันทึก</button></div>
+  </form></div>`;
+  drawThumbs(); setTimeout(initPick,30);
+}
+function drawThumbs(){
+  $("#thumbs").innerHTML=draft.photos.map((p,i)=>`<div class="thumb"><img src="${esc(photoSrc(p))}" alt=""><button type="button" data-rm="${i}" aria-label="ลบรูป">×</button></div>`).join("")+
+   (draft.uploading?`<div class="addphoto" aria-label="กำลังอัปโหลด">…</div>`:"")+`<button type="button" class="addphoto" id="addph" aria-label="เพิ่มรูป">＋</button>`;
+}
+function parseCoord(s){
+  if(!s) return null; let m=s.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||s.match(/[?&](?:q|ll|query)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/)||s.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||s.match(/(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+  if(!m) return null; const lat=+m[1], lng=+m[2]; if(Math.abs(lat)>90||Math.abs(lng)>180) return null; return {lat,lng};
+}
+function initPick(){
+  const el=$("#pickmap"); if(!el) return;
+  if(!window.echarts){ el.innerHTML=`<p class="hint" style="padding:12px">แผนที่โหลดไม่ได้ ใส่พิกัดหรือวางลิงก์ Google Maps แทนได้</p>`; return; }
+  if(pickChart){ pickChart.dispose(); } pickChart=echarts.init(el);
+  const c=mapColors(); const pl=draft.place;
+  const center= pl&&pl.lat!=null ? [pl.lng,pl.lat] : [100.5,13.7];
+  pickChart.setOption({geo:geoOpt(c,center,pl&&pl.lat!=null?10:5),series:[{type:"scatter",coordinateSystem:"geo",symbolSize:14,itemStyle:{color:c.rose,borderColor:c.surface,borderWidth:2},data:pl&&pl.lat!=null?[[pl.lng,pl.lat]]:[]}]});
+  pickChart.getZr().on("click",e=>{ const v=pickChart.convertFromPixel({geoIndex:0},[e.offsetX,e.offsetY]); if(!v) return;
+    setPin(v[1],v[0],false); });
+}
+function setPin(lat,lng,recenter){ draft.place={...(draft.place||{}),lat,lng}; $("#e-coord").value=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  if(pickChart){ const o={series:[{data:[[lng,lat]]}]}; if(recenter) o.geo={center:[lng,lat],zoom:10}; pickChart.setOption(o); } }
+function closeModal(){ if(pickChart){ pickChart.dispose(); pickChart=null; } $("#modal").innerHTML=""; draft=null; }
+function openDetail(id){ S.view="timeline"; S.filter="all"; setTab("timeline"); render();
+  requestAnimationFrame(()=>{ const b=document.querySelector(`[data-edit="${CSS.escape(id)}"]`); if(b){ const a=b.closest(".item"); a.scrollIntoView({behavior:"smooth",block:"center"}); a.animate([{boxShadow:"0 0 0 3px var(--rose)"},{boxShadow:"0 0 0 0 transparent"}],{duration:1600}); } }); }
+
+function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
+function setTab(v){ S.view=v; document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
+  ["timeline","map","days","settings"].forEach(k=>$("#v-"+k).hidden=k!==v); if(v==="map") renderMap(); try{ localStorage.setItem(LKEY+"-tab",v); }catch(e){} }
+
+/* ---------- events ---------- */
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("button"); if(!t) { if(e.target.id==="scrim") closeModal(); return; }
+  if(t.classList.contains("tab")) return setTab(t.dataset.v);
+  if(t.dataset.tab) return setTab(t.dataset.tab);
+  if(t.dataset.f){ S.filter=t.dataset.f; return renderTimeline(); }
+  if(t.id==="fab"||t.hasAttribute("data-add")) return openEditor(null);
+  if(t.dataset.edit) return openEditor(S.moments.find(m=>m.id===t.dataset.edit));
+  if(t.dataset.goto){ const m=S.moments.find(x=>x.id===t.dataset.goto); if(S.view!=="map") setTab("map"); return renderMap(m); }
+  if(t.dataset.lb){ const [id,i]=t.dataset.lb.split(":"); const m=S.moments.find(x=>x.id===id);
+    $("#modal").innerHTML=`<div class="lb" id="lb"><img src="${esc(photoSrc(m.photos[+i]))}" alt=""><button type="button" data-closelb>ปิด</button></div>`; return; }
+  if(t.hasAttribute("data-closelb")) { $("#modal").innerHTML=""; return; }
+  if(t.hasAttribute("data-close")) return closeModal();
+  if(t.dataset.t){ draft.type=t.dataset.t; document.querySelectorAll("#typepick button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.t===draft.type)); $("#repeatwrap").style.display=draft.type==="anniv"?"flex":"none"; return; }
+  if(t.id==="addph") return $("#e-files").click();
+  if(t.dataset.rm){ draft.photos.splice(+t.dataset.rm,1); return drawThumbs(); }
+  if(t.id==="clrplace"){ if(draft.place){ draft.place.lat=null; draft.place.lng=null; } $("#e-coord").value=""; if(pickChart) pickChart.setOption({series:[{data:[]}]}); return; }
+  if(t.id==="delbtn"){ if(t.dataset.sure){ try{ await store.deleteMoment(draft.id); closeModal(); toast("ลบแล้ว"); }catch(err){ toast("ลบไม่สำเร็จ: "+(err.code||"ลองใหม่อีกครั้ง")); } }
+    else { t.dataset.sure="1"; t.textContent="กดอีกครั้งเพื่อยืนยันลบ"; } return; }
+  if(t.id==="clearex"){ if(!t.dataset.sure){ t.dataset.sure="1"; t.textContent="กดอีกครั้งเพื่อยืนยัน"; return; }
+    for(const m of S.moments.filter(m=>m.example)){ try{ await store.deleteMoment(m.id); }catch(err){} }
+    if(S.settings.example){ const s={...S.settings}; delete s.example; await store.saveSettings(s); }
+    toast("ลบตัวอย่างแล้ว"); $("#v-settings").dataset.ready=""; renderSettings(); }
+});
+document.addEventListener("change",async e=>{
+  if(e.target.id==="e-files"){ const files=[...e.target.files]; e.target.value=""; draft.uploading=true; drawThumbs();
+    for(const f of files){ try{ const b=await shrink(f); draft.photos.push(await store.uploadPhoto(b)); drawThumbs(); }catch(err){ toast("อัปโหลดรูปไม่สำเร็จ: "+(err.code||err.message||"")); } }
+    draft.uploading=false; drawThumbs(); }
+  if(e.target.id==="e-coord"){ const p=parseCoord(e.target.value); if(p) setPin(p.lat,p.lng,true); else if(e.target.value) toast("อ่านพิกัดไม่ออก ลองแบบ 13.75, 100.50"); }
+});
+document.addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(e.target.id==="setform"){ const s={...S.settings,nameA:$("#s-a").value.trim(),nameB:$("#s-b").value.trim(),start:$("#s-st").value,wedding:$("#s-wd").value};
+    try{ await store.saveSettings(s); toast("บันทึกแล้ว"); }catch(err){ toast("บันทึกไม่สำเร็จ: "+(err.code||"ลองใหม่")); } return; }
+  if(e.target.id==="edform"){
+    if(draft.uploading) return toast("รอรูปอัปโหลดให้เสร็จก่อน");
+    const name=$("#e-place").value.trim(); const pc=parseCoord($("#e-coord").value);
+    let place=null; if(name||pc) place={name:name||"ไม่ระบุชื่อ",lat:pc?pc.lat:null,lng:pc?pc.lng:null};
+    const m={...draft,date:$("#e-date").value,title:$("#e-title").value.trim(),note:$("#e-note").value.trim(),repeat:draft.type==="anniv"&&$("#e-repeat").checked,place};
+    delete m.uploading; if(m.example) delete m.example;
+    const btn=$("#savebtn"); btn.disabled=true;
+    try{ await store.saveMoment(m); closeModal(); toast("บันทึกแล้ว"); }catch(err){ btn.disabled=false; toast("บันทึกไม่สำเร็จ: "+(err.code||"ลองใหม่")); }
+  }
+});
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("#modal").innerHTML) closeModal(); });
+const mq=matchMedia("(prefers-color-scheme: dark)"); (mq.addEventListener?mq.addEventListener("change",()=>{ if(S.view==="map") renderMap(); }):0);
+new MutationObserver(()=>{ if(S.view==="map") renderMap(); }).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+try{ const v=localStorage.getItem(LKEY+"-tab"); if(v&&$("#v-"+v)) S.view=v; }catch(e){}
+setTab(S.view); render(); boot();
+setInterval(()=>{ if(S.mode!=="loading") renderHero(); },60000);
+</script>
+
+</body>
+</html>
