@@ -7,9 +7,14 @@
 - แผนที่สถานที่ที่ไปด้วยกัน
 - วันสำคัญ: ครบ 100 / 500 / 1,000 วัน, ครบรอบปี, ครบรอบแต่งงาน
 
+## เปิดแอป
+- https://thampofficial.github.io/coupleapp/ (หน้านี้ฝังเว็บแอปไว้)
+- ลิงก์ตรง: https://script.google.com/macros/s/AKfycbyORviH8_mUKFhYnRdKT1gJbLN4dFRmufaPFz87Jxoy1N1Jt2np6EjuK43k_LWFZNCjhA/exec
+
 ## ไฟล์
 - `Code.gs` — ฝั่งเซิร์ฟเวอร์ อ่าน/เขียน Google Sheet "Couple App Data" และเก็บรูปในโฟลเดอร์ Drive "Couple App/Photos"
-- `Index.html` — หน้าแอป
+- `Index.html` — หน้าแอป (ตอนอัปรูปจะดึงวันที่ถ่ายและพิกัด GPS จากรูปให้อัตโนมัติ)
+- `index.html` — หน้า GitHub Pages ที่ฝังลิงก์ Apps Script
 
 ## ติดตั้ง
 1. เปิด https://script.google.com → New project
@@ -21,3 +26,6 @@
 5. อนุญาตสิทธิ์ แล้วคัดลอกลิงก์ Web app ส่งให้แฟน
 
 ข้อมูล: แท็บ `Moments` (1 แถว = 1 ความทรงจำ, คอลัมน์ photos = Drive file id คั่นด้วยจุลภาค) และแท็บ `Settings`
+
+## อัปเดตโค้ด (ลิงก์เดิม)
+Deploy → Manage deployments → ✏️ → Version: New version → Deploy

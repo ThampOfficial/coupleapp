@@ -97,6 +97,24 @@ function deleteMoment(id) {
   } finally { lock.releaseLock(); }
 }
 
+// แปลงพิกัดจากรูปเป็นชื่อสถานที่ (ใช้ Google Maps ใน Apps Script)
+function placeName(lat, lng) {
+  try {
+    const res = Maps.newGeocoder().setLanguage('th').reverseGeocode(lat, lng).results || [];
+    if (!res.length) return '';
+    const comps = res[0].address_components || [];
+    const find = t => { const c = comps.find(c => c.types.indexOf(t) >= 0); return c ? c.long_name : ''; };
+    let poi = '';
+    for (const r of res) {
+      const c = (r.address_components || []).find(c => /point_of_interest|establishment|park|natural_feature|tourist_attraction/.test(c.types.join(',')));
+      if (c) { poi = c.long_name; break; }
+    }
+    const area = find('locality') || find('sublocality') || find('administrative_area_level_2') || find('administrative_area_level_1');
+    const country = find('country');
+    return [poi, area, poi ? '' : country].filter(String).filter((v, i, a) => a.indexOf(v) === i).join(', ');
+  } catch (e) { return ''; }
+}
+
 function uploadPhoto(base64, name) {
   const folderId = readSettings_().photoFolderId;
   const folder = folderId ? DriveApp.getFolderById(folderId) : DriveApp.getRootFolder();
