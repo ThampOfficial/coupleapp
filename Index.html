@@ -216,24 +216,19 @@ function ymd(a,b){ let y=b.getFullYear()-a.getFullYear(), m=b.getMonth()-a.getMo
 function addYears(d,n){ const r=new Date(d); r.setFullYear(d.getFullYear()+n); if(r.getMonth()!==d.getMonth()) r.setDate(0); return r; }
 const fmtNum = n => n.toLocaleString("th-TH");
 
-/* ---------- storage: shared db, else this browser ---------- */
+/* ---------- storage: Google Sheet via Apps Script ---------- */
 const LKEY="couple-diary-v1";
-let db=null, assets=null;
+const hasGS = !!(window.google && google.script && google.script.run);
+const gs = (fn,...args) => new Promise((res,rej)=>{ if(!hasGS) return rej({message:"เปิดผ่านลิงก์ Apps Script เท่านั้น"});
+  google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args); });
+async function reload(){ const d=await gs("getData"); S.settings={...S.settings,...d.settings}; S.moments=d.moments; S.mode="db"; render(); }
 const store = {
-  async saveSettings(s){ if(db) return db.doc("couple/settings").set(s); S.settings=s; local.save(); render(); },
-  async saveMoment(m){ const {id,...data}=m; data.updatedAt=Date.now();
-    if(db){ if(id) return db.doc("moments/"+id).set(data); data.createdAt=Date.now(); return db.collection("moments").add(data); }
-    if(id){ S.moments=S.moments.map(x=>x.id===id?{id,...data}:x); } else { data.createdAt=Date.now(); S.moments.push({id:"l"+Date.now(),...data}); }
-    local.save(); render(); },
-  async deleteMoment(id){ if(db) return db.doc("moments/"+id).delete(); S.moments=S.moments.filter(x=>x.id!==id); local.save(); render(); },
-  async uploadPhoto(blob){ if(assets){ const r=await assets.upload(blob); return {id:r.id}; }
-    return {src: await blobToDataURL(await shrink(blob,900,.78))}; }
+  async saveSettings(s){ await gs("saveSettings",s); await reload(); },
+  async saveMoment(m){ await gs("saveMoment",m); await reload(); },
+  async deleteMoment(id){ await gs("deleteMoment",id); await reload(); },
+  async uploadPhoto(blob){ const url=await blobToDataURL(blob); const id=await gs("uploadPhoto",url.split(",")[1],"photo-"+Date.now()+".jpg"); return {id}; }
 };
-const local = {
-  load(){ try{ const j=JSON.parse(localStorage.getItem(LKEY)||"null"); if(j){ S.settings=j.settings||S.settings; S.moments=j.moments||[]; } }catch(e){} },
-  save(){ try{ localStorage.setItem(LKEY,JSON.stringify({settings:S.settings,moments:S.moments})); }catch(e){ toast("พื้นที่ในเบราว์เซอร์เต็ม ลองใช้รูปน้อยลง"); } }
-};
-const photoSrc = p => p.id ? "/_blob/"+p.id : p.src;
+const photoSrc = p => p.id ? "https://lh3.googleusercontent.com/d/"+p.id+"=w1200" : p.src;
 
 function blobToDataURL(b){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(b); }); }
 function shrink(file,max=1600,q=.85){ return new Promise((res)=>{ const img=new Image(); const u=URL.createObjectURL(file);
@@ -243,22 +238,9 @@ function shrink(file,max=1600,q=.85){ return new Promise((res)=>{ const img=new 
   img.onerror=()=>{ URL.revokeObjectURL(u); res(file); }; img.src=u; }); }
 
 async function boot(){
-  let settled=false;
-  const fallback = () => { if(settled) return; settled=true; S.mode="local"; local.load(); render(); };
-  const timer=setTimeout(fallback,10000);
-  try{
-    const api = window.claude && window.claude.use ? window.claude : null;
-    if(!api){ clearTimeout(timer); return fallback(); }
-    db = await api.use("db");
-    if(!db){ clearTimeout(timer); return fallback(); }
-    api.use("assets").then(a=>{ assets=a; }).catch(()=>{});
-    let gotS=false, gotM=false;
-    const ready=()=>{ if(gotS&&gotM&&!settled){ settled=true; clearTimeout(timer); S.mode="db"; } render(); };
-    db.doc("couple/settings").onSnapshot(snap=>{ if(snap.exists){ S.settings={...S.settings,...snap.data()}; } gotS=true; ready(); },
-      e=>{ clearTimeout(timer); db=null; fallback(); });
-    db.collection("moments").onSnapshot(snap=>{ S.moments=snap.docs.map(d=>({id:d.id,...d.data()})); gotM=true; ready(); },
-      e=>{ clearTimeout(timer); db=null; fallback(); });
-  }catch(e){ clearTimeout(timer); fallback(); }
+  if(!hasGS){ S.mode="error"; render(); $("#status").textContent="หน้านี้ต้องเปิดผ่านลิงก์เว็บแอปของ Google Apps Script"; return; }
+  try{ await reload(); }catch(e){ S.mode="error"; render(); $("#status").textContent="โหลดข้อมูลไม่สำเร็จ: "+(e.message||e)+" · ลองรีเฟรช"; }
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden && !$("#modal").innerHTML) reload().catch(()=>{}); });
 }
 
 /* ---------- milestones ---------- */
@@ -280,7 +262,7 @@ function milestones(){
 
 /* ---------- render ---------- */
 function render(){
-  $("#status").textContent = S.mode==="loading" ? "กำลังโหลด…" : S.mode==="db" ? "บันทึกออนไลน์ · แชร์ลิงก์ให้แฟนเพื่อเพิ่มด้วยกันได้" : "บันทึกไว้ในเบราว์เซอร์นี้เท่านั้น";
+  $("#status").textContent = S.mode==="loading" ? "กำลังโหลด…" : S.mode==="db" ? "บันทึกใน Google Sheet · เปิดลิงก์เดียวกันได้ทั้งคู่" : "";
   renderHero(); renderTimeline(); renderDays(); renderSettings(); if(S.view==="map") renderMap();
 }
 function renderHero(){
@@ -353,7 +335,7 @@ function renderSettings(){
     <div class="field"><label for="s-wd">วันแต่งงาน (ถ้ามี)</label><input type="date" id="s-wd" value="${esc(s.wedding)}"></div></div>
     <div class="actions"><button class="btn" type="submit">บันทึก</button></div></form>
     <div class="card" style="margin-top:14px"><b style="font-family:var(--f-display);font-weight:500">ใช้กับแฟน</b>
-    <p class="hint" style="margin:0">${S.mode==="db"?"กด Share ของหน้านี้แล้วเชิญแฟนแบบแก้ไขได้ (Can edit) ทั้งคู่จะเห็นและเพิ่มไทม์ไลน์ร่วมกันได้ รูปที่อัปโหลดจะเก็บไว้กับหน้านี้":"ตอนนี้ข้อมูลอยู่ในเบราว์เซอร์นี้เท่านั้น เปิดหน้านี้ใน claude.ai ขณะล็อกอินเพื่อบันทึกออนไลน์และแชร์กับแฟน"}</p>
+    <p class="hint" style="margin:0">ส่งลิงก์หน้านี้ให้แฟน ทั้งคู่เปิดแล้วเห็นและเพิ่มไทม์ไลน์ร่วมกันได้ ข้อมูลอยู่ใน Google Sheet “Couple App Data” และรูปอยู่ในโฟลเดอร์ Couple App/Photos ใน Google Drive</p>
     ${S.moments.some(m=>m.example)?`<button class="btn ghost" type="button" id="clearex">ลบรายการตัวอย่างทั้งหมด</button>`:""}</div>`;
 }
 
