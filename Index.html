@@ -69,6 +69,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .view{padding-block:18px}
 
 /* filters */
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:2px 6px 2px 12px;margin-bottom:10px;color:var(--muted)}
+.search input{border:0;background:transparent;padding:9px 0;flex:1}
+.search input:focus-visible{outline:none}
+.search:focus-within{border-color:var(--rose)}
+mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 1px}
 .filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -175,7 +180,7 @@ textarea{min-height:84px;resize:vertical}
     <button class="tab" role="tab" data-v="settings" aria-selected="false">ตั้งค่า</button>
   </nav>
   <main>
-    <section class="view" id="v-timeline"></section>
+    <section class="view" id="v-timeline-wrap"><div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="ค้นหา เช่น Banff, วันเกิด, 2025, ธ.ค." aria-label="ค้นหาความทรงจำ" autocomplete="off"><button type="button" class="iconbtn" id="qclear" hidden>ล้าง</button></div><div id="v-timeline"></div></section>
     <section class="view" id="v-map" hidden>
       <div class="mapstats" id="mapstats"></div>
       <div id="map"></div>
@@ -198,7 +203,7 @@ const TYPES = {
   wedding:{label:"แต่งงาน",c:"--violet",cs:"--violet-soft"},
   other:{label:"อื่นๆ",c:"--muted",cs:"--line"}
 };
-const S = {settings:{nameA:"",nameB:"",start:"",wedding:""}, moments:[], filter:"all", view:"timeline", mode:"loading"};
+const S = {settings:{nameA:"",nameB:"",start:"",wedding:""}, moments:[], filter:"all", q:"", view:"timeline", mode:"loading"};
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const tv = (k) => `var(${k})`;
@@ -318,6 +323,9 @@ function renderHero(){
   if(pills) h+=`<div class="nextline">${pills}</div>`;
   $("#hero").innerHTML=h;
 }
+function hl(text,qs){ let h=esc(text); if(!qs||!qs.length) return h;
+  const re=new RegExp("("+qs.map(w=>esc(w).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")","gi");
+  return h.replace(/(<[^>]*>)|([^<]+)/g,(m0,tag,txt)=>tag?tag:txt.replace(re,"<mark>$1</mark>")); }
 function typeStyle(k){ const T=TYPES[k]||TYPES.other; return `--c:${tv(T.c)};--cs:${tv(T.cs)}`; }
 
 function renderTimeline(){
@@ -325,10 +333,12 @@ function renderTimeline(){
   const counts={all:S.moments.length}; S.moments.forEach(m=>counts[m.type]=(counts[m.type]||0)+1);
   let h=`<div class="filters">`+[["all","ทั้งหมด"],...Object.entries(TYPES).map(([k,v])=>[k,v.label])].map(([k,l])=>
     `<button class="chip" aria-pressed="${S.filter===k}" data-f="${k}" style="${k!=="all"?typeStyle(k):""}">${k!=="all"?`<span class="tdot" style="background:var(--c)"></span>`:""}${l} <span class="num">${counts[k]||0}</span></button>`).join("")+`</div>`;
-  const list=S.moments.filter(m=>S.filter==="all"||m.type===S.filter).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
+  const qs=S.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const hay=m=>{ const d=parseD(m.date); return [m.title,m.note,m.place&&m.place.name,(TYPES[m.type]||TYPES.other).label,m.date,d?thLong(d):"",d?thMonth(d):"",d?String(d.getFullYear()+543):""].join(" ").toLowerCase(); };
+  const list=S.moments.filter(m=>(S.filter==="all"||m.type===S.filter)&&qs.every(w=>hay(m).includes(w))).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
   if(!list.length){
     h+= S.mode==="loading" ? `<div class="empty"><p>กำลังโหลดความทรงจำ…</p></div>` :
-      `<div class="empty"><h3>${S.moments.length?"ยังไม่มีเรื่องในหมวดนี้":"เริ่มบันทึกเรื่องแรกของเรา"}</h3><p>เพิ่มวันที่เจอกัน วันนี้ทำอะไร ทริปที่ไป หรือวันครบรอบ พร้อมรูปและสถานที่</p><button class="btn" data-add>เพิ่มความทรงจำ</button></div>`;
+      qs.length ? `<div class="empty"><h3>ไม่เจอเรื่องที่ตรงกับ “${esc(S.q.trim())}”</h3><p>ลองคำอื่น เช่น ชื่อสถานที่ ปี หรือชื่อเดือน</p></div>` : `<div class="empty"><h3>${S.moments.length?"ยังไม่มีเรื่องในหมวดนี้":"เริ่มบันทึกเรื่องแรกของเรา"}</h3><p>เพิ่มวันที่เจอกัน วันนี้ทำอะไร ทริปที่ไป หรือวันครบรอบ พร้อมรูปและสถานที่</p><button class="btn" data-add>เพิ่มความทรงจำ</button></div>`;
   } else {
     let cur=""; let open=false;
     list.forEach(m=>{ const d=parseD(m.date)||todayD(); const mk=thMonth(d);
@@ -337,10 +347,10 @@ function renderTimeline(){
       h+=`<article class="item" style="${typeStyle(m.type)}">
         <div class="item-head"><div class="meta"><span class="typetag">${T.label}</span><span>${thLong(d)}</span>${dn&&dn>0?`<span class="dayno num">วันที่ ${fmtNum(dn)}</span>`:""}${m.example?`<span class="ex">ตัวอย่าง</span>`:""}</div>
         <button class="iconbtn" data-edit="${m.id}" aria-label="แก้ไข">แก้ไข</button></div>
-        ${m.title?`<h3>${esc(m.title)}</h3>`:""}
-        ${m.note?`<p class="note">${esc(m.note)}</p>`:""}
+        ${m.title?`<h3>${hl(m.title,qs)}</h3>`:""}
+        ${m.note?`<p class="note">${hl(m.note,qs)}</p>`:""}
         ${ph.length?`<div class="photos n${Math.min(ph.length,3)}">${ph.map((p,i)=>`<button data-lb="${m.id}:${i}" aria-label="ดูรูป"><img loading="lazy" src="${esc(photoSrc(p))}" alt="" onerror="this.style.opacity=0"></button>`).join("")}</div>`:""}
-        ${m.place&&m.place.name?`<button class="place" data-goto="${m.id}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg><span>${esc(m.place.name)}</span></button>`:""}
+        ${m.place&&m.place.name?`<button class="place" data-goto="${m.id}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg><span>${hl(m.place.name,qs)}</span></button>`:""}
       </article>`; });
     if(open) h+=`</div>`;
   }
@@ -456,7 +466,7 @@ function openDetail(id){ S.view="timeline"; S.filter="all"; setTab("timeline"); 
 
 function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
 function setTab(v){ S.view=v; document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
-  ["timeline","map","days","settings"].forEach(k=>$("#v-"+k).hidden=k!==v); if(v==="map") renderMap(); try{ localStorage.setItem(LKEY+"-tab",v); }catch(e){} }
+  ["timeline","map","days","settings"].forEach(k=>$(k==="timeline"?"#v-timeline-wrap":"#v-"+k).hidden=k!==v); if(v==="map") renderMap(); try{ localStorage.setItem(LKEY+"-tab",v); }catch(e){} }
 
 /* ---------- events ---------- */
 document.addEventListener("click",async e=>{
@@ -502,6 +512,8 @@ document.addEventListener("submit",async e=>{
     try{ await store.saveMoment(m); closeModal(); toast("บันทึกแล้ว"); }catch(err){ btn.disabled=false; toast("บันทึกไม่สำเร็จ: "+(err.code||"ลองใหม่")); }
   }
 });
+$("#q").addEventListener("input",e=>{ S.q=e.target.value; $("#qclear").hidden=!S.q; renderTimeline(); });
+$("#qclear").addEventListener("click",()=>{ S.q=""; $("#q").value=""; $("#qclear").hidden=true; renderTimeline(); $("#q").focus(); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("#modal").innerHTML) closeModal(); });
 const mq=matchMedia("(prefers-color-scheme: dark)"); (mq.addEventListener?mq.addEventListener("change",()=>{ if(S.view==="map") renderMap(); }):0);
 new MutationObserver(()=>{ if(S.view==="map") renderMap(); }).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
