@@ -241,7 +241,7 @@ function addYears(d,n){ const r=new Date(d); r.setFullYear(d.getFullYear()+n); i
 const fmtNum = n => n.toLocaleString("th-TH");
 
 /* ---------- storage: Google Sheet via Apps Script API, cached on this device ---------- */
-const API="https://script.google.com/macros/s/AKfycbyaZUiAIorJ77P9jEw000vUYwHa1DsCYdd58GdOK1naA4ubwKfozhtX449V56-L8TAAmg/exec";
+const API="https://script.google.com/macros/s/AKfycbxecktOtLlUJJYB4mOilxWCNlMY1MlmrUMTc23PWU-HvbbSh9_sbneBeusACMnxYBt2EA/exec";
 const LKEY="couple-diary-v1", CKEY="couple-cache-v2", PKEY="couple-pw";
 const ls={get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }, del(k){ try{ localStorage.removeItem(k); }catch(e){} }};
 let PW=ls.get(PKEY)||"";
