@@ -16,14 +16,13 @@
 - `Index.html` — หน้าแอป มีช่องค้นหา (ตอนอัปรูปจะดึงวันที่ถ่ายและพิกัด GPS จากรูปให้อัตโนมัติ)
 - `index.html` — หน้า GitHub Pages ที่ฝังลิงก์ Apps Script
 
-## ติดตั้ง
-1. เปิด https://script.google.com → New project
-2. วาง `Code.gs` ทับไฟล์ Code.gs เดิม
-3. กด + → HTML ตั้งชื่อ `Index` แล้ววาง `Index.html`
-4. Deploy → New deployment → Web app
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-5. อนุญาตสิทธิ์ แล้วคัดลอกลิงก์ Web app ส่งให้แฟน
+## ติดตั้ง (ใช้ไฟล์เดียว)
+1. Apps Script: ลบทุกไฟล์ให้เหลือแค่ `Code.gs`
+2. วาง `Code.gs` จาก repo นี้ทับทั้งหมด แล้วกด Save
+3. Deploy → Manage deployments → ✏️ → Version: New version → Deploy
+
+`Code.gs` มีหน้าแอปฝังอยู่แล้ว ไม่ต้องสร้างไฟล์ Index ใน Apps Script
+(`Index.html` ใน repo เป็นต้นฉบับไว้แก้ไข)
 
 ข้อมูล: แท็บ `Moments` (1 แถว = 1 ความทรงจำ, คอลัมน์ photos = Drive file id คั่นด้วยจุลภาค) และแท็บ `Settings`
 
