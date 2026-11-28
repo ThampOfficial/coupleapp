@@ -8,23 +8,21 @@
 - วันสำคัญ: ครบ 100 / 500 / 1,000 วัน, ครบรอบปี, ครบรอบแต่งงาน
 
 ## เปิดแอป
-- https://thampofficial.github.io/coupleapp/ (หน้านี้ฝังเว็บแอปไว้)
-- ลิงก์ตรง: https://script.google.com/macros/s/AKfycbyaZUiAIorJ77P9jEw000vUYwHa1DsCYdd58GdOK1naA4ubwKfozhtX449V56-L8TAAmg/exec
+https://thampofficial.github.io/coupleapp/ (ต้องใส่รหัสผ่าน)
+
+แอปอยู่ที่ GitHub Pages (`index.html`) เก็บข้อมูลล่าสุดไว้ในเครื่องเพื่อเปิดได้ทันที แล้วดึงข้อมูลใหม่จาก Google Sheet ผ่าน Apps Script
 
 ## ไฟล์
-- `Code.gs` — ฝั่งเซิร์ฟเวอร์ อ่าน/เขียน Google Sheet "Couple App Data" และเก็บรูปในโฟลเดอร์ Drive "Couple App/Photos"
-- `Index.html` — หน้าแอป มีช่องค้นหา (ตอนอัปรูปจะดึงวันที่ถ่ายและพิกัด GPS จากรูปให้อัตโนมัติ)
-- `index.html` — หน้า GitHub Pages ที่ฝังลิงก์ Apps Script
+- `index.html` — หน้าแอป: ไทม์ไลน์ ค้นหา แผนที่ วันสำคัญ, ดึงวันที่และ GPS จากรูปตอนอัปโหลด
+- `Code.gs` — API บน Google Apps Script อ่าน/เขียน Google Sheet "Couple App Data" และเก็บรูปในโฟลเดอร์ Drive "Couple App/Photos" ทุกคำสั่งต้องมีรหัสผ่าน
+- `icon.svg`, `icon-*.png`, `apple-touch-icon.png`, `manifest.webmanifest` — ไอคอน (กด "เพิ่มไปยังหน้าจอโฮม" ได้)
 
-## ติดตั้ง (ใช้ไฟล์เดียว)
-1. Apps Script: ลบทุกไฟล์ให้เหลือแค่ `Code.gs`
-2. วาง `Code.gs` จาก repo นี้ทับทั้งหมด แล้วกด Save
-3. Deploy → Manage deployments → ✏️ → Version: New version → Deploy
+## ตั้งค่า Apps Script
+1. วาง `Code.gs` ทับไฟล์เดิม (ไม่ต้องมีไฟล์อื่น) แล้ว Save
+2. Deploy → Manage deployments → ✏️ → Version: New version → Deploy (ลิงก์เดิม)
+3. ถ้าลิงก์ /exec เปลี่ยน ให้แก้ค่า `API` ใน `index.html`
 
-`Code.gs` มีหน้าแอปฝังอยู่แล้ว ไม่ต้องสร้างไฟล์ Index ใน Apps Script
-(`Index.html` ใน repo เป็นต้นฉบับไว้แก้ไข)
+รหัสผ่านเก็บในแท็บ Settings ของ Google Sheet (แถว `password`) ไม่ได้อยู่ใน repo นี้
 
 ข้อมูล: แท็บ `Moments` (1 แถว = 1 ความทรงจำ, คอลัมน์ photos = Drive file id คั่นด้วยจุลภาค) และแท็บ `Settings`
 
-## อัปเดตโค้ด (ลิงก์เดิม)
-Deploy → Manage deployments → ✏️ → Version: New version → Deploy
