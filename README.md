@@ -9,7 +9,7 @@
 
 ## เปิดแอป
 - https://thampofficial.github.io/coupleapp/ (หน้านี้ฝังเว็บแอปไว้)
-- ลิงก์ตรง: https://script.google.com/macros/s/AKfycbwtg8iBaA7i9IR8wxWoCprGgzy8Lz_LzkLIGI4mblSQGPFDREN-REvHu636-VXhmb00xw/exec
+- ลิงก์ตรง: https://script.google.com/macros/s/AKfycbyaZUiAIorJ77P9jEw000vUYwHa1DsCYdd58GdOK1naA4ubwKfozhtX449V56-L8TAAmg/exec
 
 ## ไฟล์
 - `Code.gs` — ฝั่งเซิร์ฟเวอร์ อ่าน/เขียน Google Sheet "Couple App Data" และเก็บรูปในโฟลเดอร์ Drive "Couple App/Photos"
