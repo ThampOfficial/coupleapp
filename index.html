@@ -246,8 +246,9 @@ const LKEY="couple-diary-v1", CKEY="couple-cache-v2", PKEY="couple-pw";
 const ls={get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }, del(k){ try{ localStorage.removeItem(k); }catch(e){} }};
 let PW=ls.get(PKEY)||"";
 async function api(action,payload={}){
-  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,pw:PW,...payload})});
-  let j; try{ j=await r.json(); }catch(e){ throw new Error("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"); }
+  let r; try{ r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,pw:PW,...payload})}); }
+  catch(e){ const er=new Error(navigator.onLine===false?"ไม่มีอินเทอร์เน็ต":"ต่อ Apps Script ไม่ได้ (ยังไม่ได้เช็กรหัสผ่าน) · เช็กว่า Deploy เป็น Anyone และใช้ Code.gs ตัวใหม่"); er.code="net"; throw er; }
+  let j; try{ j=await r.json(); }catch(e){ const er=new Error("Apps Script ตอบกลับไม่ถูกต้อง · ใช้ Code.gs ตัวใหม่แล้ว Deploy เวอร์ชันใหม่หรือยัง"); er.code="net"; throw er; }
   if(j.error){ const e=new Error(j.error); e.code=j.code; if(j.code==="auth") lock(); throw e; }
   return j.result;
 }
