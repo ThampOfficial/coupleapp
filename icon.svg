@@ -1,50 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#FBE3E8"/>
-  <circle cx="256" cy="300" r="190" fill="#F7D0D9"/>
-  <!-- heart -->
-  <path d="M256 150c-14-26-58-28-66 4-7 28 30 52 66 76 36-24 73-48 66-76-8-32-52-30-66-4z" fill="#D9455F"/>
-  <ellipse cx="226" cy="150" rx="10" ry="6" fill="#fff" opacity=".55" transform="rotate(-30 226 150)"/>
-  <!-- left cat (cream/orange) body -->
-  <ellipse cx="170" cy="420" rx="92" ry="70" fill="#F2B880"/>
-  <path d="M96 400c-40 6-58 40-40 62" stroke="#F2B880" stroke-width="22" stroke-linecap="round" fill="none"/>
-  <!-- left head -->
-  <path d="M98 238l-6-70 64 40z" fill="#F2B880"/>
-  <path d="M240 238l6-70-64 40z" fill="#F2B880"/>
-  <path d="M106 222l-2-36 30 20z" fill="#F7A9B8"/>
-  <path d="M232 222l2-36-30 20z" fill="#F7A9B8"/>
-  <ellipse cx="170" cy="290" rx="92" ry="82" fill="#F2B880"/>
-  <path d="M150 214c6 14 34 14 40 0" stroke="#E39A5A" stroke-width="8" stroke-linecap="round" fill="none"/>
-  <ellipse cx="170" cy="322" rx="54" ry="40" fill="#FFF1E0"/>
-  <!-- left face: happy closed eyes -->
-  <path d="M120 284q14-14 28 0" stroke="#3B2A2F" stroke-width="8" stroke-linecap="round" fill="none"/>
-  <path d="M192 284q14-14 28 0" stroke="#3B2A2F" stroke-width="8" stroke-linecap="round" fill="none"/>
-  <ellipse cx="116" cy="312" rx="16" ry="10" fill="#F58BA0" opacity=".7"/>
-  <ellipse cx="226" cy="312" rx="16" ry="10" fill="#F58BA0" opacity=".7"/>
-  <path d="M164 306h12l-6 7z" fill="#D9455F"/>
-  <path d="M158 320q12 12 12 0q0 12 12 0" stroke="#3B2A2F" stroke-width="5" stroke-linecap="round" fill="none"/>
-  <!-- right cat (gray) body -->
-  <ellipse cx="342" cy="420" rx="92" ry="70" fill="#9AA0B5"/>
-  <path d="M416 400c40 6 58 40 40 62" stroke="#9AA0B5" stroke-width="22" stroke-linecap="round" fill="none"/>
-  <!-- right head, tilted toward left cat -->
-  <g transform="rotate(-10 342 290)">
-    <path d="M270 238l-6-70 64 40z" fill="#9AA0B5"/>
-    <path d="M414 238l6-70-64 40z" fill="#9AA0B5"/>
-    <path d="M278 222l-2-36 30 20z" fill="#F7A9B8"/>
-    <path d="M406 222l2-36-30 20z" fill="#F7A9B8"/>
-    <ellipse cx="342" cy="290" rx="92" ry="82" fill="#9AA0B5"/>
-    <path d="M322 212v18M342 208v20M362 212v18" stroke="#7E849A" stroke-width="7" stroke-linecap="round"/>
-    <ellipse cx="342" cy="322" rx="54" ry="40" fill="#EEF0F6"/>
-    <circle cx="306" cy="282" r="12" fill="#3B2A2F"/>
-    <circle cx="378" cy="282" r="12" fill="#3B2A2F"/>
-    <circle cx="310" cy="277" r="4" fill="#fff"/>
-    <circle cx="382" cy="277" r="4" fill="#fff"/>
-    <ellipse cx="288" cy="312" rx="16" ry="10" fill="#F58BA0" opacity=".7"/>
-    <ellipse cx="398" cy="312" rx="16" ry="10" fill="#F58BA0" opacity=".7"/>
-    <path d="M336 306h12l-6 7z" fill="#D9455F"/>
-    <path d="M330 320q12 12 12 0q0 12 12 0" stroke="#3B2A2F" stroke-width="5" stroke-linecap="round" fill="none"/>
-  </g>
-  <!-- paws holding -->
-  <ellipse cx="236" cy="410" rx="30" ry="22" fill="#F2B880"/>
-  <ellipse cx="276" cy="414" rx="30" ry="22" fill="#9AA0B5"/>
-  <path d="M256 396c-6-10-22-9-23 2-1 9 11 16 23 24 12-8 24-15 23-24-1-11-17-12-23-2z" fill="#D9455F"/>
+  <rect width="512" height="512" rx="112" fill="#E8344E"/>
+  <!-- white cat (left) and gray cat (right) form one heart -->
+  <path d="M256 444C190 392 92 330 92 236c0-28 10-52 26-70l-6-78 62 44c14-6 30-8 46-8 16 0 24 4 36 12z" fill="#FFFFFF"/>
+  <path d="M256 444c66-52 164-114 164-208 0-28-10-52-26-70l6-78-62 44c-14-6-30-8-46-8-16 0-24 4-36 12z" fill="#8F94A6"/>
+  <path d="M256 136v308" stroke="#E8344E" stroke-width="10"/>
+  <path d="M122 104l2 40 30-22z" fill="#F7B6C2"/>
+  <path d="M390 104l-2 40-30-22z" fill="#F7B6C2"/>
+  <g fill="#1F1B24"><circle cx="160" cy="236" r="14"/><circle cx="216" cy="236" r="14"/><circle cx="296" cy="236" r="14"/><circle cx="352" cy="236" r="14"/></g>
+  <g fill="#FFFFFF"><circle cx="165" cy="231" r="4.5"/><circle cx="221" cy="231" r="4.5"/><circle cx="301" cy="231" r="4.5"/><circle cx="357" cy="231" r="4.5"/></g>
+  <path d="M180 266h16l-8 9zM316 266h16l-8 9z" fill="#F0607A"/>
+  <path d="M140 270h-40M140 284l-36 10" stroke="#E8344E" stroke-width="6" stroke-linecap="round"/>
+  <path d="M372 270h40M372 284l36 10" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
 </svg>
