@@ -15,7 +15,7 @@ https://thampofficial.github.io/coupleapp/ (ต้องใส่รหัสผ
 ## ไฟล์
 - `index.html` — หน้าแอป: ไทม์ไลน์ ค้นหา แผนที่ วันสำคัญ, ดึงวันที่และ GPS จากรูปตอนอัปโหลด
 - `Code.gs` — API บน Google Apps Script อ่าน/เขียน Google Sheet "Couple App Data" และเก็บรูปในโฟลเดอร์ Drive "Couple App/Photos" ทุกคำสั่งต้องมีรหัสผ่าน
-- `icon.svg`, `icon-*.png`, `apple-touch-icon.png`, `manifest.webmanifest` — ไอคอน (กด "เพิ่มไปยังหน้าจอโฮม" ได้)
+- `icon-v2.svg`, `icon-*.png`, `apple-touch-icon-v2.png`, `manifest.webmanifest` — ไอคอน (กด "เพิ่มไปยังหน้าจอโฮม" ได้)
 
 ## ตั้งค่า Apps Script
 1. วาง `Code.gs` ทับไฟล์เดิม (ไม่ต้องมีไฟล์อื่น) แล้ว Save
